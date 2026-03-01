@@ -1,0 +1,68 @@
+
+import { Link } from "react-router-dom";
+import { DollarSign } from "lucide-react";
+import { useBudget } from "../context/BudgetContext";
+
+export const ExpenseList = () => {
+    const { expenses, categories } = useBudget();
+
+    const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+    const categoriesWithTotals = categories.map(category => {
+        const totalAmount = expenses
+            .filter(exp => exp.categoryId === category.id)
+            .reduce((sum, exp) => sum + exp.amount, 0);
+
+        return {
+            ...category,
+            totalAmount
+        };
+    });
+
+    return (
+        <div className="p-4 glass-panel mb-4">
+            <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-3">
+                    <h3 className="text-xl font-bold text-white">Gastos Operativos</h3>
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-rose-pink/15 border border-brand-rose-pink/20">
+                        <DollarSign size={14} className="text-brand-rose-pink" />
+                        <span className="text-brand-rose-pink font-bold text-sm">${totalExpenses.toLocaleString('es-AR')}</span>
+                    </div>
+                </div>
+                <div className="flex gap-4">
+                    <Link to="/add-transaction?type=gasto" className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors font-semibold flex items-center gap-1">
+                        + Agregar
+                    </Link>
+                    <Link to="/expenses" className="text-sm text-brand-light-pink hover:text-white transition-colors">
+                        Ver todos
+                    </Link>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {categoriesWithTotals.map((category) => {
+                    const Icon = category.icon;
+                    return (
+                        <Link
+                            to={`/edit-transaction/${category.id}`}
+                            key={category.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 cursor-pointer"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${category.color}`}>
+                                    <Icon size={20} />
+                                </div>
+                                <div>
+                                    <h4 className="text-white font-medium">{category.name}</h4>
+                                    <span className="text-xs text-white/50">{category.category}</span>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-white font-bold">${category.totalAmount.toLocaleString("es-AR")}</p>
+                            </div>
+                        </Link>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
