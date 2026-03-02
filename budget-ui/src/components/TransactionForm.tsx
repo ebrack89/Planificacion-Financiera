@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Plus, FileText, Trash2, Calendar as CalendarIcon, FolderPlus, Layers } from "lucide-react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useBudget } from "../context/BudgetContext";
+import { SalaryCalculator } from "./SalaryCalculator";
 
 export const TransactionForm = () => {
     const [searchParams] = useSearchParams();
@@ -16,13 +17,14 @@ export const TransactionForm = () => {
         }
     }, [searchParams]);
 
-    const { addIncome, incomes, deleteIncome, categories, addCategory } = useBudget();
+    const { addIncome, addExpense, incomes, deleteIncome, categories, addCategory } = useBudget();
     const navigate = useNavigate();
 
     const [amount, setAmount] = useState("");
     const [category, setCategory] = useState("");
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [notes, setNotes] = useState("");
+    const [calculationDetails, setCalculationDetails] = useState("");
     const [showAddCategory, setShowAddCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState("");
 
@@ -40,6 +42,10 @@ export const TransactionForm = () => {
                 const sourceName = category === "ventas" ? "Ventas / Honorarios" : "Sueldo";
                 addIncome(userId, Number(amount), sourceName, date);
             }
+        } else {
+            const catId = Number(category);
+            const finalNotes = calculationDetails ? `${notes} (${calculationDetails})` : notes;
+            addExpense(catId, Number(amount), date, finalNotes);
         }
 
         navigate("/");
@@ -149,11 +155,18 @@ export const TransactionForm = () => {
                     </Link>
                     <div>
                         <h2 className="text-3xl font-bold text-white tracking-wide">
-                            Registrar Ingreso
+                            {type === "ingreso" ? "Registrar Ingreso" : "Registrar Gasto"}
                         </h2>
-                        <p className="text-white/60 text-sm mt-1">Añade un nuevo movimiento a tu presupuesto</p>
+                        <p className="text-white/60 text-sm mt-1">
+                            {type === "ingreso" ? "Añade un nuevo movimiento a tu presupuesto" : "Registra un gasto operativo del negocio"}
+                        </p>
                     </div>
                 </div>
+                {type === "gasto" && (
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-brand-rose-pink/10 border border-brand-rose-pink/20 text-brand-rose-pink text-[10px] font-bold uppercase tracking-wider">
+                        Modo Gasto Operativo
+                    </div>
+                )}
             </header>
 
             <main className="px-8 pb-4 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -175,20 +188,48 @@ export const TransactionForm = () => {
                             </div>
                         </div>
 
-                        {/* Source */}
+                        {/* Source / Category */}
                         <div>
-                            <label className="block text-sm font-medium text-white/70 mb-2">Origen</label>
+                            <label className="block text-sm font-medium text-white/70 mb-2">
+                                {type === "ingreso" ? "Origen" : "Categoría"}
+                            </label>
                             <select
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-light-pink transition-colors"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-light-pink transition-colors appearance-none"
                                 required
                             >
-                                <option value="" className="text-black">Seleccione el origen</option>
-                                <option value="ventas" className="text-black">Ventas / Honorarios</option>
-                                <option value="sueldo" className="text-black">Sueldo</option>
+                                <option value="" disabled className="text-black">
+                                    {type === "ingreso" ? "Seleccione el origen" : "Seleccione la categoría"}
+                                </option>
+                                {type === "ingreso" ? (
+                                    <>
+                                        <option value="ventas" className="text-black">Ventas / Honorarios</option>
+                                        <option value="sueldo" className="text-black">Sueldo</option>
+                                    </>
+                                ) : (
+                                    categories.map(cat => (
+                                        <option key={cat.id} value={cat.id} className="text-black">
+                                            {cat.name} ({cat.category})
+                                        </option>
+                                    ))
+                                )}
                             </select>
                         </div>
+
+                        {/* Salary Calculator Integration */}
+                        {type === "gasto" && category === "7" && (
+                            <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                                <SalaryCalculator
+                                    onCalculate={(total, details) => {
+                                        setAmount(total.toString());
+                                        setCalculationDetails(details);
+                                    }}
+                                    initialHourlyRate={3000}
+                                    initialDailyViatico={2700}
+                                />
+                            </div>
+                        )}
 
                         {/* Date */}
                         <div className="p-3 bg-white/5 border border-white/10 rounded-2xl">
@@ -218,10 +259,13 @@ export const TransactionForm = () => {
 
                         <button
                             type="submit"
-                            className="w-full py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-lg shadow-emerald-500/20"
+                            className={`w-full py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] shadow-lg ${type === "ingreso"
+                                ? "bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-emerald-500/20"
+                                : "bg-gradient-to-r from-brand-rose-pink to-brand-light-pink text-white shadow-brand-rose-pink/20"
+                                }`}
                         >
                             <Plus size={20} />
-                            Registrar Ingreso
+                            {type === "ingreso" ? "Registrar Ingreso" : "Registrar Gasto"}
                         </button>
                     </form>
                 </div>

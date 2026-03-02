@@ -71,6 +71,8 @@ interface BudgetContextType {
     updateExpenseAmount: (expenseId: number, newAmount: number) => void;
     categories: typeof DEFAULT_CATEGORIES;
     addCategory: (name: string) => void;
+    currentPeriod: string;
+    setCurrentPeriod: (period: string) => void;
 }
 
 export const DEFAULT_CATEGORIES = [
@@ -110,7 +112,8 @@ const STORAGE_KEYS = {
     incomes: 'budget_incomes',
     personalExpenses: 'budget_personal_expenses',
     vendedoras: 'budget_vendedoras',
-    customCategories: 'budget_custom_categories'
+    customCategories: 'budget_custom_categories',
+    currentPeriod: 'budget_current_period'
 };
 
 function loadFromStorage<T>(key: string, fallback: T): T {
@@ -160,6 +163,9 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [personalExpenses, setPersonalExpenses] = useState<PersonalExpense[]>(() => loadFromStorage(STORAGE_KEYS.personalExpenses, []));
     const [vendedoras, setVendedoras] = useState<Vendedora[]>(() => loadFromStorage(STORAGE_KEYS.vendedoras, []));
     const [customCategories, setCustomCategories] = useState<{ id: number; name: string; category: string }[]>(() => loadFromStorage(STORAGE_KEYS.customCategories, []));
+    const [currentPeriod, setCurrentPeriod] = useState<string>(() => loadFromStorage(STORAGE_KEYS.currentPeriod, "03/2026"));
+
+    // Merge default + custom categories
 
     // Merge default + custom categories
     const categories = [
@@ -178,6 +184,7 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     useEffect(() => { localStorage.setItem(STORAGE_KEYS.personalExpenses, JSON.stringify(personalExpenses)); }, [personalExpenses]);
     useEffect(() => { localStorage.setItem(STORAGE_KEYS.vendedoras, JSON.stringify(vendedoras)); }, [vendedoras]);
     useEffect(() => { localStorage.setItem(STORAGE_KEYS.customCategories, JSON.stringify(customCategories)); }, [customCategories]);
+    useEffect(() => { localStorage.setItem(STORAGE_KEYS.currentPeriod, JSON.stringify(currentPeriod)); }, [currentPeriod]);
 
     const addIncome = (userId: string, amount: number, source: string, date: string) => {
         setUsers(prevUsers =>
@@ -288,7 +295,7 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
 
     return (
-        <BudgetContext.Provider value={{ users, expenses, incomes, personalExpenses, vendedoras, categories, addIncome, addExpense, deleteExpense, deleteIncome, addPersonalExpense, deletePersonalExpense, addVendedora, updateExpenseAmount, addCategory }}>
+        <BudgetContext.Provider value={{ users, expenses, incomes, personalExpenses, vendedoras, categories, addIncome, addExpense, deleteExpense, deleteIncome, addPersonalExpense, deletePersonalExpense, addVendedora, updateExpenseAmount, addCategory, currentPeriod, setCurrentPeriod }}>
             {children}
         </BudgetContext.Provider>
     );
