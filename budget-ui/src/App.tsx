@@ -10,7 +10,7 @@ import { BudgetProvider } from "./context/BudgetContext";
 
 function App() {
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <div className="flex min-h-screen font-sans selection:bg-brand-rose-pink/30">
         <BudgetProvider>
           <Sidebar />
