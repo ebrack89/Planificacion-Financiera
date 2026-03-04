@@ -25,22 +25,22 @@ export const UserCard = ({ id, name, balance, variant }: UserCardProps) => {
             <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl opacity-50 
         ${isPrimary ? 'bg-[#D391B0]' : 'bg-white'}`}></div>
 
-            <div className="flex justify-between items-start mb-3 relative z-10">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30">
+            <div className="flex justify-between items-start mb-3 relative z-10 gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30 shrink-0">
                         <span className="text-xl font-bold text-white">{name.charAt(0)}</span>
                     </div>
-                    <div>
-                        <h3 className="text-lg font-semibold text-white">Ingresos de {name}</h3>
+                    <div className="min-w-0">
+                        <h3 className="text-lg font-semibold text-white leading-tight break-words">Ingresos de {name}</h3>
                     </div>
                 </div>
                 <Link
                     to={`/add-transaction?type=ingreso&user=${id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors shadow-sm ml-auto text-white"
+                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors shadow-sm ml-auto text-white shrink-0"
                     title="Añadir Ingreso"
                 >
-                    <Plus size={20} />
+                    <Plus size={20} className="shrink-0" />
                 </Link>
             </div>
 
