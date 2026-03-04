@@ -21,15 +21,15 @@ export const ExpenseList = () => {
 
     return (
         <div className="p-4 glass-panel mb-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 w-full">
-                <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+            <div className="flex flex-col gap-3 mb-3 w-full">
+                <div className="flex items-center justify-between gap-2 overflow-hidden w-full">
                     <h3 className="text-xl font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">Gastos Operativos</h3>
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-rose-pink/15 border border-brand-rose-pink/20 shrink-0">
+                    <div className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-brand-rose-pink/15 border border-brand-rose-pink/20 shrink-0">
                         <DollarSign size={14} className="text-brand-rose-pink shrink-0" />
-                        <span className="text-brand-rose-pink font-bold text-sm whitespace-nowrap">${totalExpenses.toLocaleString('es-AR')}</span>
+                        <span className="text-brand-rose-pink font-bold text-xs sm:text-sm whitespace-nowrap">${totalExpenses.toLocaleString('es-AR')}</span>
                     </div>
                 </div>
-                <div className="flex items-center justify-end gap-3 sm:gap-4 w-full sm:w-auto shrink-0 mt-1 sm:mt-0">
+                <div className="flex items-center justify-end gap-3 w-full shrink-0">
                     <Link to="/add-transaction?type=gasto" className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors font-semibold flex items-center gap-1 whitespace-nowrap">
                         + Agregar
                     </Link>
