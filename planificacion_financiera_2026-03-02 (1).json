@@ -1,0 +1,210 @@
+{
+  "users": [
+    {
+      "id": "eduardo",
+      "name": "Eduardo",
+      "balance": 2000000,
+      "variant": "primary"
+    },
+    {
+      "id": "gabriela",
+      "name": "Gabriela",
+      "balance": 1500000,
+      "variant": "secondary"
+    }
+  ],
+  "expenses": [
+    {
+      "id": 1,
+      "categoryId": 1,
+      "name": "Supermercado",
+      "category": "Variable",
+      "amount": 80000,
+      "date": "28/02/2026"
+    },
+    {
+      "id": 2,
+      "categoryId": 2,
+      "name": "Luz",
+      "category": "Variable",
+      "amount": 435600,
+      "date": "25/02/2026"
+    },
+    {
+      "id": 3,
+      "categoryId": 3,
+      "name": "Expensas",
+      "category": "Fijo",
+      "amount": 110000,
+      "date": "10/02/2026"
+    },
+    {
+      "id": 4,
+      "categoryId": 4,
+      "name": "Impuestos",
+      "category": "Fijo",
+      "amount": 160000,
+      "date": "05/02/2026"
+    },
+    {
+      "id": 5,
+      "categoryId": 5,
+      "name": "Internet",
+      "category": "Fijo",
+      "amount": 83000,
+      "date": "02/02/2026"
+    },
+    {
+      "id": 1772377223337,
+      "categoryId": 8,
+      "name": "Contador",
+      "category": "Fijo",
+      "amount": 91000,
+      "date": "01/03/2026"
+    },
+    {
+      "id": 1772377282097,
+      "categoryId": 7,
+      "name": "Sueldos",
+      "category": "Fijo",
+      "amount": 130200,
+      "date": "28/02/2026",
+      "personName": "Renata"
+    },
+    {
+      "id": 1772377340922,
+      "categoryId": 7,
+      "name": "Sueldos",
+      "category": "Fijo",
+      "amount": 106200,
+      "date": "21/02/2026",
+      "personName": "Renata"
+    },
+    {
+      "id": 1772377369181,
+      "categoryId": 7,
+      "name": "Sueldos",
+      "category": "Fijo",
+      "amount": 103200,
+      "date": "14/02/2026",
+      "personName": "Renata"
+    },
+    {
+      "id": 1772377399464,
+      "categoryId": 7,
+      "name": "Sueldos",
+      "category": "Fijo",
+      "amount": 106200,
+      "date": "07/02/2026",
+      "personName": "Renata"
+    },
+    {
+      "id": 1772379428634,
+      "categoryId": 9,
+      "name": "Supermercado",
+      "category": "Variable",
+      "amount": 30000,
+      "date": "01/03/2026"
+    },
+    {
+      "id": 1772380349522,
+      "categoryId": 10,
+      "name": "Supermercado",
+      "category": "Variable",
+      "amount": 160000,
+      "date": "01/03/2026"
+    },
+    {
+      "id": 1772380515636,
+      "categoryId": 1,
+      "name": "Supermercado",
+      "category": "Variable",
+      "amount": 150000,
+      "date": "01/03/2026"
+    },
+    {
+      "id": 1772380674050,
+      "categoryId": 1,
+      "name": "Supermercado",
+      "category": "Variable",
+      "amount": 120000,
+      "date": "01/03/2026"
+    },
+    {
+      "id": 1772380686807,
+      "categoryId": 1,
+      "name": "Supermercado",
+      "category": "Variable",
+      "amount": 100000,
+      "date": "01/03/2026"
+    },
+    {
+      "id": 1772386136755,
+      "categoryId": 6,
+      "name": "Publicidad",
+      "category": "Variable",
+      "amount": 2000000,
+      "date": "01/03/2026"
+    }
+  ],
+  "incomes": [
+    {
+      "id": 1772294627052,
+      "userId": "gabriela",
+      "amount": 1500000,
+      "source": "Sueldo",
+      "date": "28/02/2026"
+    },
+    {
+      "id": 1772294657696,
+      "userId": "eduardo",
+      "amount": 2000000,
+      "source": "Ventas / Honorarios",
+      "date": "28/02/2026"
+    }
+  ],
+  "personalExpenses": [
+    {
+      "id": 1772377076963,
+      "userId": "eduardo",
+      "description": "Cigarros",
+      "amount": 3500,
+      "date": "01/03/2026"
+    },
+    {
+      "id": 1772377105647,
+      "userId": "eduardo",
+      "description": "Uber",
+      "amount": 5200,
+      "date": "01/03/2026"
+    },
+    {
+      "id": 1772426668545,
+      "userId": "eduardo",
+      "description": "Cigarro",
+      "amount": 3500,
+      "date": "02/03/2026"
+    }
+  ],
+  "vendedoras": [
+    {
+      "name": "Renata",
+      "color": "bg-pink-500/20 text-pink-400"
+    }
+  ],
+  "customCategories": [
+    {
+      "id": 9,
+      "name": "Gas",
+      "category": "Variable"
+    },
+    {
+      "id": 10,
+      "name": "Mantenimiento de Bancos",
+      "category": "Variable"
+    }
+  ],
+  "currentPeriod": "03/2026",
+  "version": "1.0",
+  "exportDate": "2026-03-02T05:22:17.179Z"
+}

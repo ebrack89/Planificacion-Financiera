@@ -54,7 +54,7 @@ export const UserCard = ({ id, name, balance, variant }: UserCardProps) => {
             <div className="flex justify-between items-end relative z-10">
                 <div>
                     <p className="text-sm text-white/70 mb-1">Disponible</p>
-                    <h2 className="text-3xl font-bold text-white">${balance}</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white">${balance}</h2>
                 </div>
             </div>
         </div>

@@ -47,16 +47,18 @@ export const ExpenseList = () => {
                             to={`/edit-transaction/${category.id}`}
                             key={category.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 cursor-pointer"
                         >
-                            <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${category.color}`}>
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${category.color}`}>
                                     <Icon size={20} />
                                 </div>
-                                <div>
-                                    <h4 className="text-white font-medium">{category.name}</h4>
-                                    <span className="text-xs text-white/50">{category.category}</span>
+                                <div className="min-w-0 flex-1">
+                                    <h4 className="text-white font-medium text-sm leading-tight line-clamp-2 break-words text-left" title={category.name}>
+                                        {category.name}
+                                    </h4>
+                                    <span className="text-[10px] sm:text-xs text-white/50 block truncate text-left mt-0.5">{category.category}</span>
                                 </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right whitespace-nowrap shrink-0 ml-2">
                                 <p className="text-white font-bold">${category.totalAmount.toLocaleString("es-AR")}</p>
                             </div>
                         </Link>

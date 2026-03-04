@@ -20,22 +20,19 @@ export const AllExpensesPage = () => {
 
     return (
         <div className="flex-1 overflow-x-hidden overflow-y-auto w-full">
-            <header className="flex justify-between items-center py-4 px-8 border-b border-white/10">
-                <div className="flex items-center gap-4">
-                    <Link to="/" className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white">
-                        <ArrowLeft size={20} />
-                    </Link>
+            <main className="px-4 md:px-8 py-6 pb-4 max-w-6xl mx-auto">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div className="flex items-center gap-4">
-                        <h2 className="text-2xl font-bold text-white tracking-wide">Todos los Gastos</h2>
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-rose-pink/15 border border-brand-rose-pink/20">
-                            <DollarSign size={14} className="text-brand-rose-pink" />
-                            <span className="text-brand-rose-pink font-bold text-sm">${totalExpenses.toLocaleString('es-AR')}</span>
-                        </div>
+                        <Link to="/" className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white">
+                            <ArrowLeft size={20} />
+                        </Link>
+                        <h2 className="text-xl md:text-2xl font-bold text-white tracking-wide">Todos los Gastos</h2>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-brand-rose-pink/15 border border-brand-rose-pink/20">
+                        <DollarSign size={16} className="text-brand-rose-pink" />
+                        <span className="text-brand-rose-pink font-bold text-lg">${totalExpenses.toLocaleString('es-AR')}</span>
                     </div>
                 </div>
-            </header>
-
-            <main className="px-8 py-4 max-w-6xl mx-auto">
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                     {categoriesWithTotals.map((category) => {
                         const Icon = category.icon;

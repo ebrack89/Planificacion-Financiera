@@ -92,8 +92,8 @@ export const ReportsPage = () => {
 
     return (
         <div className="flex-1 overflow-x-hidden overflow-y-auto w-full">
-            <header className="flex justify-between items-center py-4 px-8 border-b border-white/10 mb-4">
-                <div className="flex items-center gap-4">
+            <main className="px-4 md:px-8 py-6 pb-8 max-w-6xl mx-auto">
+                <div className="flex items-center gap-4 mb-8">
                     <Link to="/" className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white">
                         <ArrowLeft size={20} />
                     </Link>
@@ -102,9 +102,6 @@ export const ReportsPage = () => {
                         <p className="text-white/60 text-xs mt-1">Resumen de ingresos y gastos por mes</p>
                     </div>
                 </div>
-            </header>
-
-            <main className="px-8 pb-8 max-w-6xl mx-auto">
                 {reports.length === 0 ? (
                     <div className="glass-panel p-12 flex flex-col items-center justify-center text-white/40">
                         <Calendar size={48} className="mb-4 opacity-50" />

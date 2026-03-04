@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { ShoppingCart, Zap, Home, FileText, Wifi, DollarSign, Users, Calculator, FolderPlus } from "lucide-react";
+import { supabase } from '../lib/supabaseClient';
 
 export interface Expense {
     id: number;
@@ -66,6 +67,7 @@ interface BudgetContextType {
     deleteExpense: (expenseId: number) => void;
     deleteIncome: (incomeId: number) => void;
     addPersonalExpense: (userId: string, description: string, amount: number, date: string) => void;
+    updatePersonalExpense: (expenseId: number, description: string, amount: number, date: string) => void;
     deletePersonalExpense: (expenseId: number) => void;
     addVendedora: (name: string) => void;
     updateExpenseAmount: (expenseId: number, newAmount: number) => void;
@@ -73,6 +75,9 @@ interface BudgetContextType {
     addCategory: (name: string) => void;
     currentPeriod: string;
     setCurrentPeriod: (period: string) => void;
+    exportData: () => void;
+    importData: (data: any) => void;
+    syncToCloud: () => Promise<void>;
 }
 
 export const DEFAULT_CATEGORIES = [
@@ -85,61 +90,6 @@ export const DEFAULT_CATEGORIES = [
     { id: 7, name: "Sueldos", category: "Fijo", icon: Users, color: "bg-orange-500/20 text-orange-400" },
     { id: 8, name: "Contador", category: "Fijo", icon: Calculator, color: "bg-slate-500/20 text-slate-400" },
 ];
-
-const initialExpenses: Expense[] = [
-    { id: 1, categoryId: 1, name: "Supermercado", category: "Variable", amount: 450000, date: "28/02/2026", icon: ShoppingCart, color: "bg-blue-500/20 text-blue-400" },
-    { id: 2, categoryId: 2, name: "Luz", category: "Variable", amount: 435000, date: "25/02/2026", icon: Zap, color: "bg-yellow-500/20 text-yellow-400" },
-    { id: 3, categoryId: 3, name: "Expensas", category: "Fijo", amount: 110000, date: "10/02/2026", icon: Home, color: "bg-purple-500/20 text-purple-400" },
-    { id: 4, categoryId: 4, name: "Impuestos", category: "Fijo", amount: 180000, date: "05/02/2026", icon: FileText, color: "bg-emerald-500/20 text-emerald-400" },
-    { id: 5, categoryId: 5, name: "Internet", category: "Fijo", amount: 83000, date: "02/02/2026", icon: Wifi, color: "bg-cyan-500/20 text-cyan-400" },
-    { id: 6, categoryId: 6, name: "Publicidad", category: "Variable", amount: 2000000, date: "01/02/2026", icon: DollarSign, color: "bg-brand-rose-pink/20 text-brand-rose-pink" },
-];
-
-const initialUsers: User[] = [
-    { id: "eduardo", name: "Eduardo", balance: 1500000, variant: "primary" },
-    { id: "gabriela", name: "Gabriela", balance: 850000, variant: "secondary" },
-    { id: "renata", name: "Renata", balance: 0, variant: "primary" }
-];
-
-const initialIncomes: Income[] = [
-    { id: 1, userId: "eduardo", amount: 1500000, source: "Sueldo", date: "01/02/2026" },
-    { id: 2, userId: "gabriela", amount: 850000, source: "Sueldo", date: "01/02/2026" }
-];
-
-const STORAGE_KEYS = {
-    users: 'budget_users',
-    expenses: 'budget_expenses',
-    incomes: 'budget_incomes',
-    personalExpenses: 'budget_personal_expenses',
-    vendedoras: 'budget_vendedoras',
-    customCategories: 'budget_custom_categories',
-    currentPeriod: 'budget_current_period'
-};
-
-function loadFromStorage<T>(key: string, fallback: T): T {
-    try {
-        const stored = localStorage.getItem(key);
-        if (stored) return JSON.parse(stored);
-    } catch (e) {
-        console.error(`Error loading ${key} from localStorage`, e);
-    }
-    return fallback;
-}
-
-function hydrateExpenses(rawExpenses: Omit<Expense, 'icon' | 'color'>[]): Expense[] {
-    // Merge default + custom categories for hydration
-    const customCats: { id: number; name: string; category: string }[] = (() => {
-        try {
-            const stored = localStorage.getItem(STORAGE_KEYS.customCategories);
-            return stored ? JSON.parse(stored) : [];
-        } catch { return []; }
-    })();
-    const allCats = [...DEFAULT_CATEGORIES, ...customCats.map((c: { id: number; name: string; category: string }) => ({ ...c, icon: FolderPlus, color: CUSTOM_CAT_COLORS[customCats.indexOf(c) % CUSTOM_CAT_COLORS.length] }))];
-    return rawExpenses.map(exp => {
-        const cat = allCats.find(c => c.id === exp.categoryId) || DEFAULT_CATEGORIES[0];
-        return { ...exp, icon: cat.icon, color: cat.color };
-    });
-}
 
 const CUSTOM_CAT_COLORS = [
     'bg-rose-500/20 text-rose-400',
@@ -154,128 +104,122 @@ const CUSTOM_CAT_COLORS = [
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
 export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [users, setUsers] = useState<User[]>(() => loadFromStorage(STORAGE_KEYS.users, initialUsers));
-    const [expenses, setExpenses] = useState<Expense[]>(() => {
-        const raw = loadFromStorage(STORAGE_KEYS.expenses, initialExpenses);
-        return hydrateExpenses(raw);
-    });
-    const [incomes, setIncomes] = useState<Income[]>(() => loadFromStorage(STORAGE_KEYS.incomes, initialIncomes));
-    const [personalExpenses, setPersonalExpenses] = useState<PersonalExpense[]>(() => loadFromStorage(STORAGE_KEYS.personalExpenses, []));
-    const [vendedoras, setVendedoras] = useState<Vendedora[]>(() => loadFromStorage(STORAGE_KEYS.vendedoras, []));
-    const [customCategories, setCustomCategories] = useState<{ id: number; name: string; category: string }[]>(() => loadFromStorage(STORAGE_KEYS.customCategories, []));
-    const [currentPeriod, setCurrentPeriod] = useState<string>(() => loadFromStorage(STORAGE_KEYS.currentPeriod, "03/2026"));
+    const [users, setUsers] = useState<User[]>([]);
+    const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [incomes, setIncomes] = useState<Income[]>([]);
+    const [personalExpenses, setPersonalExpenses] = useState<PersonalExpense[]>([]);
+    const [vendedoras, setVendedoras] = useState<Vendedora[]>([]);
+    const [customCategories, setCustomCategories] = useState<{ id: number; name: string; category: string }[]>([]);
+    const [currentPeriod, setCurrentPeriod] = useState<string>("03/2026");
 
-    // Merge default + custom categories
-
-    // Merge default + custom categories
     const categories = [
         ...DEFAULT_CATEGORIES,
         ...customCategories.map((c, i) => ({ ...c, icon: FolderPlus, color: CUSTOM_CAT_COLORS[i % CUSTOM_CAT_COLORS.length] }))
     ];
 
-    // Persist to localStorage on every change
-    useEffect(() => { localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users)); }, [users]);
+    const formatDateToBR = (dateStr: string) => {
+        if (!dateStr) return '';
+        if (dateStr.includes('/')) return dateStr;
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
+    const formatDateToISO = (dateStr: string) => {
+        if (!dateStr) return '';
+        if (dateStr.includes('-')) return dateStr;
+        const [day, month, year] = dateStr.split('/');
+        return `${year}-${month}-${day}`;
+    };
+
+    const hydrateExpenses = (raw: any[], currentCustomCats: any[]): Expense[] => {
+        return raw.map(exp => {
+            const cat = [...DEFAULT_CATEGORIES, ...currentCustomCats.map(c => ({ ...c, icon: FolderPlus, color: CUSTOM_CAT_COLORS[currentCustomCats.indexOf(c) % CUSTOM_CAT_COLORS.length] }))].find(c => c.id === exp.category_id || c.id === exp.categoryId) || DEFAULT_CATEGORIES[0];
+            return {
+                id: exp.id,
+                categoryId: exp.category_id || exp.categoryId,
+                name: cat.name,
+                category: (cat as any).category || (cat as any).type || exp.category,
+                amount: Number(exp.amount),
+                date: formatDateToBR(exp.date),
+                icon: (cat as any).icon || FolderPlus,
+                color: (cat as any).color || CUSTOM_CAT_COLORS[0],
+                personName: exp.person_name || exp.personName
+            };
+        });
+    };
+
+    const fetchAll = async () => {
+        const { data: profiles } = await supabase.from('profiles').select('*').order('name', { ascending: true });
+        if (profiles) setUsers(profiles as User[]);
+
+        const { data: dbCats } = await supabase.from('categories').select('*').eq('is_custom', true);
+        const mappedCustomCats = dbCats ? dbCats.map(c => ({ id: c.id, name: c.name, category: c.type })) : [];
+        setCustomCategories(mappedCustomCats);
+
+        const { data: dbExpenses } = await supabase.from('expenses').select('*');
+        if (dbExpenses) setExpenses(hydrateExpenses(dbExpenses, mappedCustomCats));
+
+        const { data: dbIncomes } = await supabase.from('incomes').select('*');
+        if (dbIncomes) setIncomes((dbIncomes || []).map(inc => ({ ...inc, id: inc.id, userId: inc.user_id, amount: Number(inc.amount), date: formatDateToBR(inc.date) })));
+
+        const { data: dbPersonal } = await supabase.from('personal_expenses').select('*');
+        if (dbPersonal) setPersonalExpenses((dbPersonal || []).map(exp => ({ ...exp, id: exp.id, userId: exp.user_id, amount: Number(exp.amount), date: formatDateToBR(exp.date) })));
+    };
+
     useEffect(() => {
-        // Strip non-serializable fields (icon) before saving
-        const serializable = expenses.map(({ icon, ...rest }) => rest);
-        localStorage.setItem(STORAGE_KEYS.expenses, JSON.stringify(serializable));
-    }, [expenses]);
-    useEffect(() => { localStorage.setItem(STORAGE_KEYS.incomes, JSON.stringify(incomes)); }, [incomes]);
-    useEffect(() => { localStorage.setItem(STORAGE_KEYS.personalExpenses, JSON.stringify(personalExpenses)); }, [personalExpenses]);
-    useEffect(() => { localStorage.setItem(STORAGE_KEYS.vendedoras, JSON.stringify(vendedoras)); }, [vendedoras]);
-    useEffect(() => { localStorage.setItem(STORAGE_KEYS.customCategories, JSON.stringify(customCategories)); }, [customCategories]);
-    useEffect(() => { localStorage.setItem(STORAGE_KEYS.currentPeriod, JSON.stringify(currentPeriod)); }, [currentPeriod]);
+        fetchAll();
 
-    const addIncome = (userId: string, amount: number, source: string, date: string) => {
-        setUsers(prevUsers =>
-            prevUsers.map(user =>
-                user.id === userId
-                    ? { ...user, balance: amount }
-                    : user
-            )
-        );
+        // Realtime subscriptions
+        const channels = [
+            supabase.channel('profiles').on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchAll),
+            supabase.channel('expenses').on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, fetchAll),
+            supabase.channel('incomes').on('postgres_changes', { event: '*', schema: 'public', table: 'incomes' }, fetchAll),
+            supabase.channel('personal_expenses').on('postgres_changes', { event: '*', schema: 'public', table: 'personal_expenses' }, fetchAll),
+            supabase.channel('categories').on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, fetchAll),
+        ].map(c => c.subscribe());
 
-        const [year, month, day] = date.split('-');
-        const formattedDate = `${day}/${month}/${year}`;
-
-        const newIncome: Income = {
-            id: Date.now(),
-            userId,
-            amount,
-            source,
-            date: formattedDate
+        return () => {
+            channels.forEach(c => supabase.removeChannel(c));
         };
+    }, []);
 
-        setIncomes(prev => [...prev, newIncome]);
+    const addIncome = async (userId: string, amount: number, source: string, date: string) => {
+        const isoDate = formatDateToISO(date);
+        await supabase.from('incomes').insert([{ user_id: userId, amount, source, date: isoDate }]);
+        await supabase.from('profiles').update({ balance: amount }).eq('id', userId);
     };
 
-    const addExpense = (categoryId: number, amount: number, date: string, _notes: string, personName?: string) => {
-        // Find existing category in the predefined list to copy its metadata
-        const existingCat = DEFAULT_CATEGORIES.find(c => c.id === categoryId) || DEFAULT_CATEGORIES[0];
-
-        // Format date from YYYY-MM-DD to DD/MM/YYYY
-        const [year, month, day] = date.split('-');
-        const formattedDate = `${day}/${month}/${year}`;
-
-        const newExpense: Expense = {
-            id: Date.now(),
-            categoryId,
-            name: existingCat.name,
-            category: existingCat.category,
-            amount,
-            date: formattedDate,
-            icon: existingCat.icon,
-            color: existingCat.color,
-            ...(personName ? { personName } : {})
-        };
-
-        setExpenses(prev => [...prev, newExpense]);
+    const addExpense = async (categoryId: number, amount: number, date: string, _notes: string, personName?: string) => {
+        const isoDate = formatDateToISO(date);
+        await supabase.from('expenses').insert([{ category_id: categoryId, amount, date: isoDate, person_name: personName }]);
     };
 
-    const deleteExpense = (expenseId: number) => {
-        setExpenses(prev => prev.filter(exp => exp.id !== expenseId));
+    const deleteExpense = async (expenseId: number) => {
+        await supabase.from('expenses').delete().eq('id', expenseId);
     };
 
-    const deleteIncome = (incomeId: number) => {
-        // Find the income to get the userId before deleting
-        const incomeToDelete = incomes.find(inc => inc.id === incomeId);
-        const updatedIncomes = incomes.filter(inc => inc.id !== incomeId);
-        setIncomes(updatedIncomes);
-
-        if (incomeToDelete) {
-            // Recalculate user balance: use the most recent remaining income, or 0 if none left
-            const remainingUserIncomes = updatedIncomes
-                .filter(inc => inc.userId === incomeToDelete.userId)
-                .sort((a, b) => b.id - a.id);
-
-            const newBalance = remainingUserIncomes.length > 0 ? remainingUserIncomes[0].amount : 0;
-
-            setUsers(prevUsers =>
-                prevUsers.map(user =>
-                    user.id === incomeToDelete.userId
-                        ? { ...user, balance: newBalance }
-                        : user
-                )
-            );
+    const deleteIncome = async (incomeId: number) => {
+        const income = incomes.find(i => i.id === incomeId);
+        await supabase.from('incomes').delete().eq('id', incomeId);
+        if (income) {
+            const { data: remaining } = await supabase.from('incomes').select('*').eq('user_id', income.userId).order('id', { ascending: false }).limit(1);
+            const newBalance = remaining && remaining.length > 0 ? remaining[0].amount : 0;
+            await supabase.from('profiles').update({ balance: newBalance }).eq('id', income.userId);
         }
     };
 
-    const addPersonalExpense = (userId: string, description: string, amount: number, date: string) => {
-        const [year, month, day] = date.split('-');
-        const formattedDate = `${day}/${month}/${year}`;
-
-        const newExp: PersonalExpense = {
-            id: Date.now(),
-            userId,
-            description,
-            amount,
-            date: formattedDate
-        };
-        setPersonalExpenses(prev => [...prev, newExp]);
+    const addPersonalExpense = async (userId: string, description: string, amount: number, date: string) => {
+        const isoDate = formatDateToISO(date);
+        await supabase.from('personal_expenses').insert([{ user_id: userId, description, amount, date: isoDate }]);
     };
 
-    const deletePersonalExpense = (expenseId: number) => {
-        setPersonalExpenses(prev => prev.filter(e => e.id !== expenseId));
+    const updatePersonalExpense = async (expenseId: number, description: string, amount: number, date: string) => {
+        const isoDate = formatDateToISO(date);
+        await supabase.from('personal_expenses').update({ description, amount, date: isoDate }).eq('id', expenseId);
+    };
+
+    const deletePersonalExpense = async (expenseId: number) => {
+        await supabase.from('personal_expenses').delete().eq('id', expenseId);
     };
 
     const addVendedora = (name: string) => {
@@ -283,19 +227,75 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setVendedoras(prev => [...prev, { name, color }]);
     };
 
-    const updateExpenseAmount = (expenseId: number, newAmount: number) => {
-        setExpenses(prev => prev.map(exp =>
-            exp.id === expenseId ? { ...exp, amount: newAmount } : exp
-        ));
+    const updateExpenseAmount = async (expenseId: number, newAmount: number) => {
+        await supabase.from('expenses').update({ amount: newAmount }).eq('id', expenseId);
     };
 
-    const addCategory = (name: string) => {
-        const maxId = Math.max(...DEFAULT_CATEGORIES.map(c => c.id), ...customCategories.map(c => c.id), 0);
-        setCustomCategories(prev => [...prev, { id: maxId + 1, name, category: 'Variable' }]);
+    const addCategory = async (name: string) => {
+        await supabase.from('categories').insert([{ name, type: 'Variable', is_custom: true }]);
+    };
+
+    const exportData = () => {
+        const data = { users, expenses, incomes, personalExpenses, vendedoras, customCategories, currentPeriod };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `planificacion_financiera_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+    };
+
+    const importData = (data: any) => {
+        console.log("Use syncToCloud for migration", data);
+    };
+
+    const syncToCloud = async () => {
+        const localExpenses = JSON.parse(localStorage.getItem('budget_expenses') || '[]');
+        const localIncomes = JSON.parse(localStorage.getItem('budget_incomes') || '[]');
+        const localPersonal = JSON.parse(localStorage.getItem('budget_personal_expenses') || '[]');
+        const localCustomCats = JSON.parse(localStorage.getItem('budget_custom_categories') || '[]');
+
+        for (const cat of localCustomCats) {
+            await supabase.from('categories').upsert({ id: cat.id, name: cat.name, type: cat.category, is_custom: true });
+        }
+
+        if (localIncomes.length > 0) {
+            await supabase.from('incomes').insert(localIncomes.map((inc: any) => ({
+                user_id: inc.userId,
+                amount: inc.amount,
+                source: inc.source,
+                date: formatDateToISO(inc.date)
+            })));
+        }
+
+        if (localExpenses.length > 0) {
+            await supabase.from('expenses').insert(localExpenses.map((exp: any) => ({
+                category_id: exp.categoryId,
+                amount: exp.amount,
+                date: formatDateToISO(exp.date),
+                person_name: exp.personName
+            })));
+        }
+
+        if (localPersonal.length > 0) {
+            await supabase.from('personal_expenses').insert(localPersonal.map((exp: any) => ({
+                user_id: exp.userId,
+                description: exp.description,
+                amount: exp.amount,
+                date: formatDateToISO(exp.date)
+            })));
+        }
+
+        await fetchAll();
     };
 
     return (
-        <BudgetContext.Provider value={{ users, expenses, incomes, personalExpenses, vendedoras, categories, addIncome, addExpense, deleteExpense, deleteIncome, addPersonalExpense, deletePersonalExpense, addVendedora, updateExpenseAmount, addCategory, currentPeriod, setCurrentPeriod }}>
+        <BudgetContext.Provider value={{
+            users, expenses, incomes, personalExpenses, vendedoras, categories,
+            addIncome, addExpense, deleteExpense, deleteIncome, addPersonalExpense, updatePersonalExpense,
+            deletePersonalExpense, addVendedora, updateExpenseAmount, addCategory,
+            currentPeriod, setCurrentPeriod, exportData, importData, syncToCloud
+        }}>
             {children}
         </BudgetContext.Provider>
     );
@@ -303,8 +303,6 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
 export const useBudget = () => {
     const context = useContext(BudgetContext);
-    if (context === undefined) {
-        throw new Error('useBudget must be used within a BudgetProvider');
-    }
+    if (context === undefined) throw new Error('useBudget must be used within a BudgetProvider');
     return context;
 };
