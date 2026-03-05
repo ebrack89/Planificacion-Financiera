@@ -5,7 +5,8 @@ import { useBudget } from "../context/BudgetContext";
 
 const CATEGORIES = [
     { id: "tarjetas", name: "Tarjetas", icon: CreditCard, color: "text-blue-400", bg: "bg-blue-500/20", gradient: "from-blue-500 to-blue-400", shadow: "shadow-blue-500/20" },
-    { id: "gastos", name: "Gastos", icon: Wallet, color: "text-brand-rose-pink", bg: "bg-brand-rose-pink/20", gradient: "from-brand-rose-pink to-brand-light-pink", shadow: "shadow-brand-rose-pink/20" },
+    { id: "gastos-corriente", name: "Gastos del corriente mes", icon: Wallet, color: "text-brand-light-pink", bg: "bg-brand-rose-pink/10", gradient: "from-brand-rose-pink to-brand-dark-plum", shadow: "shadow-brand-rose-pink/10" },
+    { id: "gastos", name: "Gastos del siguiente mes", icon: Wallet, color: "text-brand-rose-pink", bg: "bg-brand-rose-pink/20", gradient: "from-brand-rose-pink to-brand-light-pink", shadow: "shadow-brand-rose-pink/20" },
     { id: "inversion", name: "Inversion", icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-500/20", gradient: "from-emerald-500 to-emerald-400", shadow: "shadow-emerald-500/20" },
     { id: "casa", name: "Casa", icon: Home, color: "text-amber-400", bg: "bg-amber-500/20", gradient: "from-amber-500 to-amber-400", shadow: "shadow-amber-500/20" },
 ];

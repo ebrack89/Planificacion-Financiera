@@ -23,7 +23,7 @@ export const ExpenseList = () => {
         <div className="p-4 glass-panel mb-4">
             <div className="flex flex-col gap-3 mb-3 w-full">
                 <div className="flex items-center justify-between gap-2 overflow-hidden w-full">
-                    <h3 className="text-xl font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">Gastos</h3>
+                    <h3 className="text-xl font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">Gastos del siguiente mes</h3>
                     <div className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-brand-rose-pink/15 border border-brand-rose-pink/20 shrink-0">
                         <DollarSign size={14} className="text-brand-rose-pink shrink-0" />
                         <span className="text-brand-rose-pink font-bold text-xs sm:text-sm whitespace-nowrap">${totalExpenses.toLocaleString('es-AR')}</span>

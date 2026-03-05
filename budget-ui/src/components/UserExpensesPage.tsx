@@ -5,7 +5,8 @@ import { useBudget } from "../context/BudgetContext";
 
 const CATEGORIES = [
     { id: "tarjetas", name: "Tarjetas", icon: CreditCard, color: "text-blue-400", bg: "bg-blue-500/20" },
-    { id: "gastos", name: "Gastos", icon: Wallet, color: "text-brand-rose-pink", bg: "bg-brand-rose-pink/20" },
+    { id: "gastos-corriente", name: "Gastos del corriente mes", icon: Wallet, color: "text-brand-light-pink", bg: "bg-brand-rose-pink/10" },
+    { id: "gastos", name: "Gastos del siguiente mes", icon: Wallet, color: "text-brand-rose-pink", bg: "bg-brand-rose-pink/20" },
     { id: "inversion", name: "Inversion", icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-500/20" },
     { id: "casa", name: "Casa", icon: Home, color: "text-amber-400", bg: "bg-amber-500/20" },
 ];
@@ -16,7 +17,6 @@ export const UserExpensesPage = () => {
     const { personalExpenses, addPersonalExpense, deletePersonalExpense, users } = useBudget();
 
     const [showForm, setShowForm] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[1].name); // Default to Gastos
     const [detail, setDetail] = useState("");
     const [amount, setAmount] = useState("");
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -25,7 +25,8 @@ export const UserExpensesPage = () => {
         e.preventDefault();
         if (userId && amount) {
             const finalAmount = -Math.abs(Number(amount));
-            const fullDescription = detail.trim() ? `${selectedCategory} - ${detail.trim()}` : selectedCategory;
+            const categoryToUse = CATEGORIES.find(c => c.id === "gastos-corriente")?.name || "Gastos del corriente mes";
+            const fullDescription = detail.trim() ? `${categoryToUse} - ${detail.trim()}` : categoryToUse;
             addPersonalExpense(userId, fullDescription, finalAmount, date);
             setAmount("");
             setDetail("");
@@ -67,28 +68,14 @@ export const UserExpensesPage = () => {
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-rose-pink to-brand-light-pink text-white font-semibold text-sm hover:scale-105 transition-transform shadow-lg shadow-brand-rose-pink/20 w-full sm:w-auto justify-center"
                     >
                         <Plus size={18} />
-                        Nuevo Gasto
+                        Gastos del corriente mes
                     </button>
                 </div>
 
                 {/* Inline Add Form */}
                 {showForm && (
                     <div className="glass-panel p-5 mb-6 border border-brand-rose-pink/30 shadow-[0_0_15px_rgba(217,70,168,0.15)] animate-in fade-in slide-in-from-top-4 duration-300">
-                        <form onSubmit={handleAddExpense} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                            <div>
-                                <label className="block text-xs font-medium text-white/60 mb-1">Categoría</label>
-                                <select
-                                    value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="w-full bg-black/20 border border-white/10 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-brand-rose-pink transition-colors appearance-none"
-                                >
-                                    {CATEGORIES.map(c => (
-                                        <option key={c.id} value={c.name} className="bg-[#1a0b2e] text-white">
-                                            {c.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                        <form onSubmit={handleAddExpense} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                             <div>
                                 <label className="flex items-center gap-1.5 text-xs font-medium text-white/60 mb-1">
                                     <FileText size={12} /> Detalle (Opcional)
@@ -189,7 +176,7 @@ export const UserExpensesPage = () => {
                         <div className="py-12 flex flex-col items-center justify-center text-white/40">
                             <FileText size={48} className="mb-4 opacity-50" />
                             <p className="text-lg font-semibold">Sin registros todavía</p>
-                            <p className="text-sm mt-1">Presioná "Nuevo Registro" para agregar uno.</p>
+                            <p className="text-sm mt-1">Presioná "Gastos del corriente mes" para agregar uno.</p>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
